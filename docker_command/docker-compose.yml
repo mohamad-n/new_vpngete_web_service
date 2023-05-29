@@ -1,0 +1,49 @@
+version: "3.8"
+services:
+          mysql_db:
+                    build: ./database
+                    image: mysql:latest
+                    hostname: ${MYSQL_HOST_NAME}
+                    container_name: ${MYSQL_HOST_NAME}
+                    volumes:
+                              - ./database/data:/var/lib/mysql
+                    ports:
+                              - "${MYSQL_PORT}:${MYSQL_PORT}"
+                    environment:
+                              MYSQL_ROOT_PASSWORD: ${MYSQL_DB_PASSWORD}
+                    networks:
+                              - app-network
+          nest-api:
+                    container_name: nest-api
+                    build:
+                              context: .
+                              dockerfile: Dockerfile
+                    ports:
+                              - 4044:4044
+                    links:
+                              - mysql_db
+                    depends_on:
+                              - mysql_db
+                              - webserver
+                    env_file:
+                              - .env
+                    networks:
+                              - app-network
+
+          webserver:
+                    image: nginx:mainline-alpine
+                    container_name: nginx_webserver
+                    restart: unless-stopped
+                    ports:
+                              - "80:80"
+                    volumes:
+                              - ./nginx/nginx-conf:/etc/nginx/conf.d
+                    networks:
+                              - app-network
+
+networks:
+          app-network:
+
+volumes:
+          database:
+          nginx:

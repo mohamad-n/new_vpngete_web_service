@@ -1,0 +1,50 @@
+//-------linux------//
+docker-compose -f db/db-docker-compose.yml --env-file .env up -d
+
+ //-------mac------//
+docker compose -f db/db-docker-compose.yml --env-file .env up -d
+
+
+//-------- run bash ------
+docker exec -it postgres_db bash
+
+
+ 
+//-------- change password ------
+psql -h localhost -U zvpn
+
+
+ALTER USER zvpn WITH PASSWORD 'G1xKWfLXCPg8zKHji1LSK76pDVCdpzqGGStCtbwo7SQXlCN2tmwouIt412HUfTBU0sbJ4DFIizo5JyZbseQ337BiEp9hayjmaeK9';
+
+
+//-------- backup -------
+  
+//------- sql type ------
+docker exec -i -e PGPASSWORD=G1xKWfLXCPg8zKHji1LSK76pDVCdpzqGGStCtbwo7SQXlCN2tmwouIt412HUfTBU0sbJ4DFIizo5JyZbseQ337BiEp9hayjmaeK9 postgres_db /usr/bin/pg_dump \
+ -U zvpn -d zvpn_db| gzip -9  > ~/db/zvpn_db_backup.sql.gz
+
+
+//------- dump type ------
+docker exec -i -e PGPASSWORD=G1xKWfLXCPg8zKHji1LSK76pDVCdpzqGGStCtbwo7SQXlCN2tmwouIt412HUfTBU0sbJ4DFIizo5JyZbseQ337BiEp9hayjmaeK9 postgres_db /usr/bin/pg_dump -Fc \
+ -U zvpn -d zvpn_db   > ~/db/zvpn_db_backup.dump
+
+//-------- restore -------
+ 
+gzip -d zvpn_db_backup.sql.gz
+
+docker cp zvpn_db_backup.sql postgres_db:/backups
+
+psql -h localhost -U zvpn
+
+DROP DATABASE zvpn_db;
+
+CREATE DATABASE zvpn_db;
+
+psql -U zvpn -d zvpn_db < /backups/zvpn_db_backup.sql 
+
+
+
+
+
+
+

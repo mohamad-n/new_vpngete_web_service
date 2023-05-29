@@ -1,0 +1,228 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_DATABASE_URL")
+}
+
+model User {
+  id              Int              @id @default(autoincrement())
+  uniqueId        String           @unique @default(uuid())
+  role            UserRole
+  status          UserStatus       @default(VERIFIED)
+  type            UserType?        @default(NORMAL)
+  addedBy         String?          @default("SUPER_ADMIN")
+  email           String           @unique
+  password        String
+  prephrase       String?
+  clients         Client[]
+  panelAccess     String[]
+  balance         Balance?
+  Order           Order[]
+  activationCodes ActivationCode[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  AGENT
+}
+
+enum UserType {
+  NORMAL
+  RESELLER
+}
+
+enum UserStatus {
+  PENDING
+  VERIFIED
+  LIMITED
+  REJECTED
+}
+
+model Balance {
+  id        Int      @id @default(autoincrement())
+  amount    Int
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int?     @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id        Int            @id @default(autoincrement())
+  amount    Int
+  user      User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int?
+  type      orderType      @default(PAYMENT)
+  direction orderDirection @default(CONSUME)
+  note      String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+enum orderDirection {
+  CHRAGE
+  CONSUME
+  REFUND
+}
+
+enum orderType {
+  PAYMENT
+  ADMIN
+  SELF
+  RESELLER
+}
+
+model Client {
+  id   Int    @id @default(autoincrement())
+  uuid String @unique @default(uuid())
+
+  deviceSpecificId   String?
+  deviceOs           DeviceOS?
+  deviceOsVersion    String?
+  appVersion         String?
+  deviceModelName    String?
+  deviceManufacturer String?
+  timeZone           String?
+
+  email    String @unique
+  password String
+
+  isActive                Boolean          @default(true)
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  pushNotificationToken   String?
+  pushNotificationAllowed Boolean          @default(false)
+  message                 Message[]
+  user                    User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                  Int?
+  preferedDataProvider    String?
+  subscriptions           Subscription[]
+  consumedActivationCodes ActivationCode[]
+  Profile                 Profile[]
+  RefreshToken            RefreshToken?
+}
+
+enum DeviceOS {
+  IOS
+  ANDROID
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  hash      String?
+  expiredAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId  Int      @unique()
+}
+
+model Message {
+  id        Int         @id @default(autoincrement())
+  client    Client?     @relation(fields: [clientId], references: [id])
+  clientId  Int?
+  type      MessageType
+  title     String
+  body      String
+  data      Json?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+enum MessageType {
+  PRIVATE
+  PUBLIC
+}
+
+model Vps {
+  id   Int    @id @default(autoincrement())
+  uuid String @unique @default(uuid())
+
+  name        String   @unique()
+  protocol    Protocol @default(OPENVPN)
+  ip          String   @unique()
+  port        String
+  key         String   @unique()
+  flagImage   String?
+  isActive    Boolean  @default(true)
+  isScannable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  profile Profile[]
+  // VpsReport   VpsReport?
+}
+
+enum Protocol {
+  OPENVPN
+  WIREGUARD
+}
+
+model VpnGateVps {
+  id          Int      @id @default(autoincrement())
+  uuid        String   @unique @default(uuid())
+  ip          String   @unique()
+  profile     String
+  score       Int?
+  countryName String
+  flagImage   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Setting {
+  id          Int      @id @default(autoincrement())
+  versionInfo Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ActivationCode {
+  id                       Int      @id @default(autoincrement())
+  code                     String   @unique
+  alias                    String
+  consumer                 Client?  @relation(fields: [consumerId], references: [id])
+  consumerId               Int?
+  issuer                   User?    @relation(fields: [issuerId], references: [id])
+  issuerId                 Int?
+  duration                 Int
+  validationDurationInHour Int
+  isConsumed               Boolean  @default(false)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}
+
+model Subscription {
+  id        Int       @id @default(autoincrement())
+  startedAt DateTime?
+  expiredAt DateTime?
+  isActive  Boolean   @default(true)
+  hours     Int
+  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId  Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Profile {
+  id          Int      @id @default(autoincrement())
+  certificate String
+  name        String?
+  vps         Vps      @relation(fields: [vpsId], references: [id])
+  vpsId       Int
+  client      Client   @relation(fields: [clientId], references: [id])
+  clientId    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([clientId, vpsId])
+}
