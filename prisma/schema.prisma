@@ -149,7 +149,6 @@ model Vps {
   ip          String   @unique()
   port        String
   key         String   @unique()
-  flagImage   String?
   isActive    Boolean  @default(true)
   isScannable Boolean  @default(true)
   createdAt   DateTime @default(now())

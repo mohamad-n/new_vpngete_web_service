@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 
 import { VpsController } from './vps.controller';
-import { VpsService } from './vps.service';
+import { PrivateVpsService } from './private.vps.service';
 import { PublicVpsService } from './public.vps.service';
 import { AxiosModule } from 'src/package.modules/axios/axios.module';
 
@@ -10,6 +10,6 @@ import { AxiosModule } from 'src/package.modules/axios/axios.module';
 @Module({
   imports: [AxiosModule],
   controllers: [VpsController],
-  providers: [VpsService, PublicVpsService],
+  providers: [PrivateVpsService, PublicVpsService],
 })
 export class VpsModule {}

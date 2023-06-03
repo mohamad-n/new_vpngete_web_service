@@ -1,5 +1,5 @@
 import { Controller, Post, Put, Body, Get, UseGuards, Query } from '@nestjs/common';
-import { VpsService } from './vps.service';
+import { PrivateVpsService } from './private.vps.service';
 import { TokenAuthService } from 'src/guards/token.auth/token.auth.service';
 import { AccessTokenJwtAuthGuard } from 'src/guards/token.auth/guards/access.token.jwt.auth.guard';
 import { GetClientUniqueIds } from 'src/guards/token.auth/token.auth.decorator';
@@ -11,7 +11,7 @@ import { PublicVpsService } from './public.vps.service';
 
 @Controller('vps')
 export class VpsController {
-  constructor(private readonly VpsService: VpsService, private readonly publicVpsService: PublicVpsService) {}
+  constructor(private readonly privateVpsService: PrivateVpsService, private readonly publicVpsService: PublicVpsService) {}
 
   // @UseGuards(SessionJwtAuthGuard)
   // @SessionRoles(SessionRole.ADMIN)
@@ -31,14 +31,14 @@ export class VpsController {
   @SessionRoles(SessionRole.ADMIN)
   @Post()
   async addVps(@Body() VpsDto: vpsCreateDto) {
-    return this.VpsService.addVps(VpsDto);
+    return this.privateVpsService.addVps(VpsDto);
   }
 
   @UseGuards(SessionJwtAuthGuard)
   @SessionRoles(SessionRole.ADMIN)
   @Put()
   async updateVps(@Body() VpsDto: vpsUpdateDto) {
-    return this.VpsService.updateVps(VpsDto);
+    return this.privateVpsService.updateVps(VpsDto);
   }
 
   // @UseGuards(SessionJwtAuthGuard)
@@ -55,9 +55,9 @@ export class VpsController {
   //   return this.VpsService.updateLocation(data);
   // }
 
-  // @UseGuards(AccessTokenJwtAuthGuard)
-  // @Get('available')
-  // async getAvailableVpss(@Query('timeZone') timeZone) {
-  //   return this.VpsService.getAvailableVpss(timeZone);
-  // }
+  @UseGuards(AccessTokenJwtAuthGuard)
+  @Get('available')
+  async getAvailableVps() {
+    return this.privateVpsService.getAvailableVps();
+  }
 }

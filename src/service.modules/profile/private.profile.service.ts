@@ -13,7 +13,7 @@ import { Vps } from '@prisma/client';
 import { AxiosService } from 'src/package.modules/axios/axios.service';
 
 @Injectable()
-export class ProfileService {
+export class PrivateProfileService {
   constructor(private prisma: PrismaService, private axiosService: AxiosService) {}
 
   async getClientProfile(info: getProfileDto, clientInfo: clientDto): Promise<any> {

@@ -8,7 +8,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { UserModule } from './user/user.module';
 import { VpsModule } from './vps/vps.module';
 // import { SupportModule } from './support/support.module';
-// import { ProfileModule } from './profile/profile.module';
+import { ProfileModule } from './profile/profile.module';
 // import { MailModule } from './mail/mail.module';
 import { SettingModule } from './setting/setting.module';
 import { MessageModule } from './message/message.module';
@@ -27,7 +27,7 @@ import { MessageModule } from './message/message.module';
     StaticServeModule,
     VpsModule,
     // SupportModule,
-    // ProfileModule,
+    ProfileModule,
     MessageModule,
     SettingModule,
     // VoucherModule,

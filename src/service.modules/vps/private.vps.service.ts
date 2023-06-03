@@ -3,7 +3,7 @@ import { PrismaService } from '../../package.modules/prisma/prisma.service';
 import { vpsCreateDto, vpsUpdateDto } from './vps.dto';
 
 @Injectable()
-export class VpsService {
+export class PrivateVpsService {
   constructor(private prisma: PrismaService) {}
 
   async listPrivateVps(): Promise<any> {
@@ -16,6 +16,10 @@ export class VpsService {
   async updateVps(vpsDto: vpsUpdateDto): Promise<any> {
     const { id, ...vpsUpdate } = vpsDto;
     return this.prisma.vps.update({ where: { id }, data: vpsUpdate });
+  }
+
+  async getAvailableVps(): Promise<any> {
+    return this.prisma.vps.findMany({ where: { isActive: true }, select: { uuid: true, id: true, name: true } });
   }
 
   // async getAvailableVps(timeZone: string): Promise<any> {
