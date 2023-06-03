@@ -3,6 +3,8 @@ import { Reflector } from '@nestjs/core';
 
 import { ROLES_KEY } from './role.decorator';
 import { SessionRole } from './role.enum';
+import { CommonException } from 'src/interceptors/exception/error.interceptor';
+import { userCredentialDto } from '../session.auth/auth/user.auth.dto';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -16,10 +18,17 @@ export class RolesGuard implements CanActivate {
     }
     const { authInfo } = context.switchToHttp().getRequest();
 
-    // await this.checkPermission(requiredRoles, authInfo);
+    await this.checkPermission(requiredRoles, authInfo);
 
     // await this.checkHandlerPermission(context.getHandler().name, authInfo);
 
     return true;
+  }
+
+  checkPermission(requiredRoles: SessionRole[], authInfo: userCredentialDto): Promise<void> {
+    if (requiredRoles.some((role) => authInfo?.role?.includes(role))) {
+      return Promise.resolve();
+    }
+    throw new CommonException({ message: 'unauthorized', errorCode: 1005 }, HttpStatus.UNAUTHORIZED);
   }
 }

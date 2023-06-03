@@ -3,22 +3,30 @@ import { IsDefined, IsOptional, IsString, IsNotEmpty, Matches, IsEmail, IsNumber
 import { Expose, Type, Transform, plainToClass, plainToInstance } from 'class-transformer';
 import { clientRegistrationDto } from 'src/guards/token.auth/token.auth.dto';
 
-export class verifyReceiptIosDto {
+export class chargeDto {
+  @IsDefined()
+  @Expose()
+  @IsNumber()
+  amount: number;
+  @IsDefined()
+  @Expose()
+  @IsNumber()
+  agentId: number;
+}
+
+export class createVoucherDto {
   @IsDefined()
   @Expose()
   @IsString()
-  productId: string;
+  alias: string;
   @IsDefined()
   @Expose()
-  transactionDate: bigint;
+  @IsNumber()
+  duration: number;
   @IsDefined()
   @Expose()
-  @IsString()
-  transactionId: string;
-  @IsDefined()
-  @Expose()
-  @IsString()
-  transactionReceipt: string;
+  @IsNumber()
+  validationDurationInHour: number;
 }
 
 export class verifyAlreadyReceiptIosDto {
@@ -40,21 +48,6 @@ export class verifyAlreadyReceiptIosDto {
   @IsDefined()
   @Expose()
   originalTransactionDateIOS: bigint;
-}
-
-export class receiptIosDto {
-  @IsDefined()
-  @IsObject()
-  @ValidateNested()
-  @Type(() => clientRegistrationDto)
-  @Expose()
-  deviceInfo?: clientRegistrationDto;
-  @Expose()
-  @IsDefined()
-  @IsObject()
-  @ValidateNested()
-  @Type(() => verifyReceiptIosDto)
-  info: verifyReceiptIosDto;
 }
 
 export class recheckReceiptIosDto {

@@ -22,10 +22,10 @@ export class ProfileService {
 
     const client = await this.prisma.client.findUnique({
       where: { uuid: clientUuid },
-      include: { subscriptions: { where: { isActive: true } } },
+      include: { subscription: true },
     });
 
-    const subscription = client.subscriptions[0];
+    const subscription = client.subscription;
     const vps = await this.prisma.vps.findUnique({ where: { id: vpsId } });
 
     if (!client || !vps) {

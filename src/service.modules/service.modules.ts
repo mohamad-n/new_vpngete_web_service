@@ -4,13 +4,14 @@ import { Module } from '@nestjs/common';
 import { StaticServeModule } from './serve.static/serve.static.module';
 // import { UploadModule } from './upload/upload.module';
 import { ClientModule } from './client/client.modules';
-// import { SubscriptionModule } from './subscription/subscription.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 import { UserModule } from './user/user.module';
 import { VpsModule } from './vps/vps.module';
 // import { SupportModule } from './support/support.module';
 // import { ProfileModule } from './profile/profile.module';
 // import { MailModule } from './mail/mail.module';
-// import { SettingModule } from './setting/setting.module';
+import { SettingModule } from './setting/setting.module';
+import { MessageModule } from './message/message.module';
 // import { TasksModule } from './task/task.module';
 // import { ScheduleModule } from '@nestjs/schedule';
 // import { VoucherModule } from './voucher/voucher.module';
@@ -21,14 +22,14 @@ import { VpsModule } from './vps/vps.module';
     // TasksModule,
     ClientModule,
     UserModule,
-    // SubscriptionModule,
+    SubscriptionModule,
     // UploadModule,
     StaticServeModule,
     VpsModule,
     // SupportModule,
     // ProfileModule,
-    // MailModule,
-    // SettingModule,
+    MessageModule,
+    SettingModule,
     // VoucherModule,
   ],
   exports: [ServiceModule],

@@ -16,7 +16,7 @@ export const GetClientUniqueIds = createParamDecorator((data: unknown, ctx: Exec
     authInfo: { clientUuid },
   } = request;
 
-  return clientUuid;
+  return { clientUuid };
 });
 
 export const GetClientAppVersionInfo = createParamDecorator((data: unknown, ctx: ExecutionContext): appVersionDto => {

@@ -15,4 +15,9 @@ export class SettingService {
       ? this.prisma.setting.update({ where: { id: existingSetting.id }, data: { versionInfo: info as Prisma.JsonObject } })
       : this.prisma.setting.create({ data: { versionInfo: info as Prisma.JsonObject } });
   }
+
+  async getLastVersion(): Promise<any> {
+    const existingSetting = await this.prisma.setting.findFirst();
+    return existingSetting?.versionInfo;
+  }
 }

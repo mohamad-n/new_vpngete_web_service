@@ -14,19 +14,24 @@ import { DeviceOS } from '@prisma/client';
 export class ClientService {
   constructor(private prisma: PrismaService, private readonly randomService: RandomService, private readonly authService: TokenAuthService) {}
 
-  async clientSignup(data: clientRegistrationDto): Promise<{ clientUuid: string; accessToken: string; refreshToken: string }> {
+  async clientSignup(data: clientRegistrationDto): Promise<{ clientUuid: string }> {
     const { email, password: incomingPassword, deviceManufacturer, deviceOs, deviceOsVersion, appVersion, deviceModelName, timeZone, deviceSpecificId } = data;
 
+    const existingClient = await this.prisma.client.findUnique({ where: { email } });
+
+    if (existingClient) {
+      throw new CommonException({ message: 'This email already registered' }, HttpStatus.FORBIDDEN);
+    }
     const password = await cryptoTool.hash(incomingPassword);
     const client = await this.prisma.client.create({
       data: { email, password, deviceManufacturer, deviceOs, deviceOsVersion, appVersion, deviceModelName, timeZone, deviceSpecificId },
     });
 
-    const { accessToken, refreshToken } = await this.createRefreshToken({ clientId: client.id, clientUuid: client.uuid });
-    return { clientUuid: client.uuid, accessToken, refreshToken };
+    // const { accessToken, refreshToken } = await this.createRefreshToken({ clientId: client.id, clientUuid: client.uuid });
+    return { clientUuid: client.uuid };
   }
 
-  async clientSignin(data: clientRegistrationDto): Promise<{ clientUuid: string; accessToken: string; refreshToken: string }> {
+  async clientSignin(data: clientRegistrationDto): Promise<any> {
     const { email, password: incomingPassword, deviceManufacturer, deviceOs, deviceOsVersion, appVersion, deviceModelName, timeZone, deviceSpecificId } = data;
     const client = await this.prisma.client.findUnique({ where: { email } });
 
@@ -34,20 +39,28 @@ export class ClientService {
       throw new CommonException({ message: 'user not found' }, HttpStatus.FORBIDDEN);
     }
 
+    if (!client?.isActive) {
+      throw new CommonException({ message: 'Client is inactive. please contact support.' }, HttpStatus.FORBIDDEN);
+    }
     const passwordIsMatch = await cryptoTool.isMatch(incomingPassword, client.password);
 
     if (!passwordIsMatch) {
       throw new CommonException({ message: 'invalid password' }, HttpStatus.FORBIDDEN);
     }
 
-    await this.prisma.client.update({ where: { id: client.id }, data: { deviceManufacturer, deviceOs, deviceOsVersion, appVersion, deviceModelName, timeZone, deviceSpecificId } });
+    const updatedClient = await this.prisma.client.update({
+      where: { id: client.id },
+      data: { deviceManufacturer, deviceOs, deviceOsVersion, appVersion, deviceModelName, timeZone, deviceSpecificId },
+      include: { subscription: { select: { expiredAt: true } } },
+    });
     const { accessToken, refreshToken } = await this.createRefreshToken({ clientId: client.id, clientUuid: client.uuid });
-    return { clientUuid: client.uuid, accessToken, refreshToken };
+    return { clientUuid: client.uuid, accessToken, refreshToken, subscription: { ...updatedClient.subscription, inactiveDevice: false, inactiveClient: false } };
   }
 
   async clientSignout(clientInfo: clientDto): Promise<any> {
     const { clientUuid } = clientInfo;
-    const client = await this.prisma.client.update({ where: { uuid: clientUuid }, data: { isActive: false } });
+    const client = await this.prisma.client.findUnique({ where: { uuid: clientUuid } });
+
     await this.prisma.refreshToken.delete({ where: { clientId: client.id } });
 
     return clientUuid;
@@ -112,7 +125,7 @@ export class ClientService {
         email: true,
         uuid: true,
 
-        subscriptions: { where: { isActive: true, expiredAt: { gt: new Date() } }, select: { expiredAt: true } },
+        subscription: { select: { expiredAt: true } },
       },
     });
 

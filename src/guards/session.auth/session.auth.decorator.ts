@@ -1,5 +1,6 @@
 import { ConflictException, SetMetadata } from '@nestjs/common';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { userCredentialDto } from './auth/user.auth.dto';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const PublicForSessionBase = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -9,7 +10,7 @@ export const AuthInfo = createParamDecorator((data: unknown, ctx: ExecutionConte
   return request.authInfo;
 });
 
-export const GetUserUniqueId = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
+export const GetUserUniqueId = createParamDecorator((data: unknown, ctx: ExecutionContext): userCredentialDto => {
   const {
     authInfo: { uniqueId, role },
   } = ctx.switchToHttp().getRequest();

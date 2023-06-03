@@ -7,6 +7,7 @@ import { RefreshTokenJwtAuthGuard } from 'src/guards/token.auth/guards/refresh.t
 import { SessionRoles } from 'src/guards/rbac/role.decorator';
 import { SessionRole } from 'src/guards/rbac/role.enum';
 import { SessionJwtAuthGuard } from 'src/guards/session.auth/guards/session.jwt.auth.guard';
+import { RolesGuard } from 'src/guards/rbac/role.guard';
 
 @Controller('client')
 export class ClientController {
@@ -28,7 +29,7 @@ export class ClientController {
     return this.clientService.refreshToken(info);
   }
   @UseGuards(AccessTokenJwtAuthGuard)
-  @Get('signout')
+  @Get('logout')
   async clientSignout(@GetClientUniqueIds() clientInfo: clientDto) {
     return this.clientService.clientSignout(clientInfo);
   }
@@ -46,7 +47,7 @@ export class ClientController {
   //   return this.clientService.getAllClients();
   // }
 
-  @UseGuards(SessionJwtAuthGuard)
+  @UseGuards(SessionJwtAuthGuard, RolesGuard)
   @SessionRoles(SessionRole.ADMIN)
   @Delete('')
   async deleteClient(@Query('id') id) {

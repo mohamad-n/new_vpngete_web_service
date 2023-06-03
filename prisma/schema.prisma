@@ -11,22 +11,22 @@ datasource db {
 }
 
 model User {
-  id              Int              @id @default(autoincrement())
-  uniqueId        String           @unique @default(uuid())
-  role            UserRole
-  status          UserStatus       @default(VERIFIED)
-  type            UserType?        @default(NORMAL)
-  addedBy         String?          @default("SUPER_ADMIN")
-  email           String           @unique
-  password        String
-  prephrase       String?
-  clients         Client[]
-  panelAccess     String[]
-  balance         Balance?
-  Order           Order[]
-  activationCodes ActivationCode[]
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id                  Int              @id @default(autoincrement())
+  uniqueId            String           @unique @default(uuid())
+  role                UserRole
+  status              UserStatus       @default(VERIFIED)
+  type                UserType?        @default(NORMAL)
+  addedBy             String?
+  email               String           @unique
+  password            String
+  userEmailPassPhrase String?
+  clients             Client[]
+  panelAccess         String[]
+  balance             Balance?
+  Order               Order[]
+  activationCodes     ActivationCode[]
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
 }
 
 enum UserRole {
@@ -60,7 +60,7 @@ model Order {
   amount    Int
   user      User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int?
-  type      orderType      @default(PAYMENT)
+  issuer    orderIssuer    @default(PAYMENT)
   direction orderDirection @default(CONSUME)
   note      String?
   createdAt DateTime       @default(now())
@@ -68,12 +68,12 @@ model Order {
 }
 
 enum orderDirection {
-  CHRAGE
+  CHARGE
   CONSUME
   REFUND
 }
 
-enum orderType {
+enum orderIssuer {
   PAYMENT
   ADMIN
   SELF
@@ -104,7 +104,7 @@ model Client {
   user                    User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                  Int?
   preferedDataProvider    String?
-  subscriptions           Subscription[]
+  subscription            Subscription?
   consumedActivationCodes ActivationCode[]
   Profile                 Profile[]
   RefreshToken            RefreshToken?
@@ -126,15 +126,14 @@ model RefreshToken {
 }
 
 model Message {
-  id        Int         @id @default(autoincrement())
-  client    Client?     @relation(fields: [clientId], references: [id])
-  clientId  Int?
-  type      MessageType
-  title     String
-  body      String
-  data      Json?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id          Int         @id @default(autoincrement())
+  client      Client?     @relation(fields: [clientId], references: [id])
+  clientId    Int?
+  type        MessageType
+  description String
+  data        Json?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 enum MessageType {
@@ -143,9 +142,8 @@ enum MessageType {
 }
 
 model Vps {
-  id   Int    @id @default(autoincrement())
-  uuid String @unique @default(uuid())
-
+  id          Int      @id @default(autoincrement())
+  uuid        String   @unique @default(uuid())
   name        String   @unique()
   protocol    Protocol @default(OPENVPN)
   ip          String   @unique()
@@ -205,10 +203,8 @@ model Subscription {
   id        Int       @id @default(autoincrement())
   startedAt DateTime?
   expiredAt DateTime?
-  isActive  Boolean   @default(true)
-  hours     Int
   client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  clientId  Int
+  clientId  Int       @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }

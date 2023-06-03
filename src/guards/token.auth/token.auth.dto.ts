@@ -58,6 +58,51 @@ export class clientRegistrationDto {
   timeZone?: string;
 }
 
+export class clientRegistrationWithVoucherDto {
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  @Expose()
+  deviceSpecificId: string;
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  @Expose()
+  deviceManufacturer: string;
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  @Expose()
+  @Transform(({ value }) => value?.toUpperCase())
+  deviceOs: DeviceOS;
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  @Expose()
+  deviceOsVersion: string;
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  @Expose()
+  appVersion: string;
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  @Expose()
+  deviceModelName: string;
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  @Expose()
+  code: string;
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  @Expose()
+  emailPrePhrase: string;
+  @Expose()
+  timeZone?: string;
+}
 export class clientDto {
   @IsDefined()
   @Expose()

@@ -10,7 +10,17 @@ export class settingIosVersionDto {
   @Expose()
   @IsString()
   link: string;
+  @IsDefined()
+  @Expose()
+  changes: string[];
 }
+
+// export class versionChangesDto {
+//   @IsDefined()
+//   @Expose()
+//   @IsString()
+//   changes: string;
+// }
 
 export class settingVersionDto {
   @IsDefined()
