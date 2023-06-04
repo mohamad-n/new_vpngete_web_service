@@ -21,6 +21,7 @@ export class PublicVpsService {
     if (!(await this.checkUploadPath())) {
       throw new CommonException({ message: 'invalid directory' }, HttpStatus.FORBIDDEN);
     }
+    await this.prisma.vpnGateVps.deleteMany();
     const baseURL = 'http://www.vpngate.net';
     const url = '/api/iphone/';
     const servers = await this.axiosService.createRequest({ baseURL, url, method: 'GET' });

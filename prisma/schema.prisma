@@ -211,7 +211,6 @@ model Subscription {
 model Profile {
   id          Int      @id @default(autoincrement())
   certificate String
-  name        String?
   vps         Vps      @relation(fields: [vpsId], references: [id])
   vpsId       Int
   client      Client   @relation(fields: [clientId], references: [id])

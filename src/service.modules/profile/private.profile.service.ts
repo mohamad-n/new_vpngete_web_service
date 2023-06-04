@@ -16,19 +16,17 @@ import { AxiosService } from 'src/package.modules/axios/axios.service';
 export class PrivateProfileService {
   constructor(private prisma: PrismaService, private axiosService: AxiosService) {}
 
-  async getClientProfile(info: getProfileDto, clientInfo: clientDto): Promise<any> {
+  async getClientProfile(vpsUuid: string, clientInfo: clientDto): Promise<any> {
     const { clientUuid } = clientInfo;
-    const { id: vpsId } = info;
-
+    // console.log('>>>>>>>>>>>', clientUuid);
     const client = await this.prisma.client.findUnique({
       where: { uuid: clientUuid },
       include: { subscription: true },
     });
 
     const subscription = client.subscription;
-    const vps = await this.prisma.vps.findUnique({ where: { id: vpsId } });
 
-    if (!client || !vps) {
+    if (!client) {
       throw new CommonException({ message: 'invalid client info' }, HttpStatus.FORBIDDEN);
     }
 
@@ -37,10 +35,16 @@ export class PrivateProfileService {
     }
 
     if (subscription.expiredAt < new Date()) {
-      throw new CommonException({ message: 'subscription expired' }, HttpStatus.FORBIDDEN);
+      throw new CommonException({ message: 'client subscription expired' }, HttpStatus.FORBIDDEN);
     }
 
-    const profileForClient = await this.prisma.profile.findUnique({ where: { clientId_vpsId: { vpsId, clientId: client.id } } });
+    const vps = await this.prisma.vps.findUnique({ where: { uuid: vpsUuid } });
+
+    if (!vps) {
+      throw new CommonException({ message: 'invalid server' }, HttpStatus.FORBIDDEN);
+    }
+
+    const profileForClient = await this.prisma.profile.findUnique({ where: { clientId_vpsId: { vpsId: vps.id, clientId: client.id } } });
 
     if (profileForClient?.certificate) {
       return profileForClient?.certificate;
@@ -55,7 +59,7 @@ export class PrivateProfileService {
     const vps = await this.prisma.vps.findUnique({ where: { id: vpsId } });
     const client = await this.prisma.client.findUnique({ where: { uuid } });
 
-    const { profile, clientUuid } = await this.downloadclientCertificateFromvps(vps, client.uuid);
+    const { profile, clientUuid } = await this.downloadClientCertificateFromVps(vps, client.uuid);
     if (clientUuid !== client.uuid) {
       throw new CommonException({ message: 'inconvenience cert name' }, HttpStatus.FORBIDDEN);
     }
@@ -70,9 +74,10 @@ export class PrivateProfileService {
     return certificate;
   }
 
-  async downloadclientCertificateFromvps(vps: Vps, name: string): Promise<any> {
+  async downloadClientCertificateFromVps(vps: Vps, name: string): Promise<any> {
     const baseURL = `http://${vps.ip}:${vps.port}`;
     const url = '/api/account';
+    // console.log('vps.key >>>>>>>>>>>', vps.key);
     const secret = await cryptoTool.encrypt({ expireTime: moment().add(configuration().RECEIVED_WINDOW_TIMEOUT, 's').utc() }, vps.key);
     const headers = {
       secret,
@@ -80,8 +85,10 @@ export class PrivateProfileService {
     };
     const data = { name };
     const { result } = await this.axiosService.createRequest({ method: 'POST', baseURL, url, headers, data });
+    // console.log('>>>>>>>>>>>', result);
 
     const { profile, name: clientUuid } = await cryptoTool.decrypt(result, vps.key);
+
     return { profile, clientUuid };
   }
 

@@ -14,9 +14,9 @@ export class ProfileController {
   constructor(private readonly privateProfileService: PrivateProfileService, private readonly publicProfileService: PublicProfileService) {}
 
   @UseGuards(AccessTokenJwtAuthGuard)
-  @Post('fetch/private')
-  async getClientProfile(@Body() info: getProfileDto, @GetClientUniqueIds() subscriberInfo: clientDto) {
-    return this.privateProfileService.getClientProfile(info, subscriberInfo);
+  @Get('fetch/private')
+  async getClientProfile(@Query('uuid') uuid, @GetClientUniqueIds() subscriberInfo: clientDto) {
+    return this.privateProfileService.getClientProfile(uuid, subscriberInfo);
   }
 
   @Get('fetch')

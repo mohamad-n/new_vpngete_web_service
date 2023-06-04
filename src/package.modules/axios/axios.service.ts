@@ -28,7 +28,7 @@ export class AxiosService {
         return Promise.resolve(response?.data);
       })
       .catch((error) => {
-        // console.log(error);
+        console.log(error);
         throw new CommonException({ message: 'invalid http request' }, HttpStatus.NOT_FOUND);
 
         // return Promise.reject(error);
